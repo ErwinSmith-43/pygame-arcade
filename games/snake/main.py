@@ -4,98 +4,101 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../common")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 from colors import *
 from constants import *
+import gameover
 
-pygame.init()
-screen = pygame.display.set_mode((width,height))
-clock = pygame.time.Clock()
-font = pygame.font.Font(None,30)
+def play(screen):
+    clock = pygame.time.Clock()
+    font = pygame.font.Font(None,30)
 
-base = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../assets/snake"))
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../assets/snake"))
 
-bg = pygame.image.load(os.path.join(base,"bg.png"))
-bg = pygame.transform.scale(bg,(width,height))
+    bg = pygame.image.load(os.path.join(base,"bg.png"))
+    bg = pygame.transform.scale(bg,(width,height))
 
-obstacle_img = pygame.image.load(os.path.join(base,"obstacle.png"))
-obstacle_img = pygame.transform.scale(obstacle_img,(10,10))
+    obstacle_img = pygame.image.load(os.path.join(base,"obstacle.png"))
+    obstacle_img = pygame.transform.scale(obstacle_img,(10,10))
 
-snake = [(100,100)]
-dx,dy = 10,0
+    while True:
+        snake = [(100,100)]
+        dx,dy = 10,0
 
-grid = 10
+        grid = 10
 
-food = (
-    random.randrange(0,width,grid),
-    random.randrange(0,height,grid)
-)
+        food = (
+            random.randrange(0,width,grid),
+            random.randrange(0,height,grid)
+        )
 
-obstacles = []
-for _ in range(25):
-    obstacles.append((
-        random.randrange(0,width,grid),
-        random.randrange(0,height,grid)
-    ))
-
-speed = 8
-score = 0
-started = False
-
-running = True
-while running:
-    screen.blit(bg,(0,0))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.KEYDOWN:
-            started = True
-            if event.key == pygame.K_UP:
-                dx,dy = 0,-10
-            if event.key == pygame.K_DOWN:
-                dx,dy = 0,10
-            if event.key == pygame.K_LEFT:
-                dx,dy = -10,0
-            if event.key == pygame.K_RIGHT:
-                dx,dy = 10,0
-
-    if started:
-        head = (snake[0][0]+dx, snake[0][1]+dy)
-        snake.insert(0, head)
-
-        if head == food:
-            score += 1
-            food = (
+        obstacles = []
+        for _ in range(25):
+            obstacles.append((
                 random.randrange(0,width,grid),
                 random.randrange(0,height,grid)
-            )
-        else:
-            snake.pop()
+            ))
 
-        if head[0] < 0 or head[0] >= width or head[1] < 0 or head[1] >= height:
-            running = False
+        speed = 8
+        score = 0
+        started = False
 
-        if head in obstacles:
-            running = False
+        running = True
+        while running:
+            screen.blit(bg,(0,0))
 
-    for s in snake:
-        pygame.draw.rect(screen, green, (*s,10,10))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-    for o in obstacles:
-        screen.blit(obstacle_img,o)
+                if event.type == pygame.KEYDOWN:
+                    started = True
+                    if event.key == pygame.K_UP:
+                        dx,dy = 0,-10
+                    if event.key == pygame.K_DOWN:
+                        dx,dy = 0,10
+                    if event.key == pygame.K_LEFT:
+                        dx,dy = -10,0
+                    if event.key == pygame.K_RIGHT:
+                        dx,dy = 10,0
 
-    pygame.draw.rect(screen, red, (*food,10,10))
+            if started:
+                head = (snake[0][0]+dx, snake[0][1]+dy)
+                snake.insert(0, head)
 
-    text = font.render(f"Score: {score}", True, white)
-    screen.blit(text,(width-120,10))
+                if head == food:
+                    score += 1
+                    food = (
+                        random.randrange(0,width,grid),
+                        random.randrange(0,height,grid)
+                    )
+                else:
+                    snake.pop()
 
-    if not started:
-        msg = font.render("Press any key to start", True, white)
-        screen.blit(msg,(180,180))
+                if head[0] < 0 or head[0] >= width or head[1] < 0 or head[1] >= height:
+                    running = False
 
-    pygame.display.update()
-    clock.tick(speed)
+                if head in obstacles:
+                    running = False
 
-pygame.quit()
+            for s in snake:
+                pygame.draw.rect(screen, green, (*s,10,10))
+
+            for o in obstacles:
+                screen.blit(obstacle_img,o)
+
+            pygame.draw.rect(screen, red, (*food,10,10))
+
+            text = font.render(f"Score: {score}", True, white)
+            screen.blit(text,(width-120,10))
+
+            if not started:
+                msg = font.render("Press any key to start", True, white)
+                screen.blit(msg,(180,180))
+
+            pygame.display.update()
+            clock.tick(speed)
+            
+        gameover.show_gameover_screen(screen, score)

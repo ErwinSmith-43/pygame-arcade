@@ -2,6 +2,12 @@ import pygame
 import sys
 import os
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+
+import games.snake.main as snake_game
+import games.flappy.main as flappy_game
+import games.shooter.main as shooter_game
+
 pygame.init()
 screen = pygame.display.set_mode((600,400))
 clock = pygame.time.Clock()
@@ -15,8 +21,7 @@ bg = pygame.transform.scale(bg,(600,400))
 options = ["Snake", "Flappy", "Shooter"]
 selected = 0
 
-running = True
-while running:
+while True:
     screen.blit(bg,(0,0))
 
     for i, text in enumerate(options):
@@ -26,7 +31,8 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
+            sys.exit()
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
@@ -35,13 +41,11 @@ while running:
                 selected = (selected + 1) % 3
             if event.key == pygame.K_RETURN:
                 if selected == 0:
-                    os.system("python games/snake/main.py")
+                    snake_game.play(screen)
                 if selected == 1:
-                    os.system("python games/flappy/main.py")
+                    flappy_game.play(screen)
                 if selected == 2:
-                    os.system("python games/shooter/main.py")
+                    shooter_game.play(screen)
 
     pygame.display.update()
     clock.tick(60)
-
-pygame.quit()

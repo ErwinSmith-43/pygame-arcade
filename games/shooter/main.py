@@ -4,110 +4,115 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../common")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 from colors import *
 from constants import *
+import gameover
 
-pygame.init()
-screen = pygame.display.set_mode((width,height))
-clock = pygame.time.Clock()
-font = pygame.font.Font(None,30)
+def play(screen):
+    clock = pygame.time.Clock()
+    font = pygame.font.Font(None,30)
 
-base = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../assets/shooter"))
+    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../assets/shooter"))
 
-bg = pygame.image.load(os.path.join(base,"bg.png"))
-bg = pygame.transform.scale(bg,(width,height))
+    bg = pygame.image.load(os.path.join(base,"bg.png"))
+    bg = pygame.transform.scale(bg,(width,height))
 
-player_img = pygame.image.load(os.path.join(base,"player.png"))
-player_img = pygame.transform.scale(player_img,(40,40))
+    player_img = pygame.image.load(os.path.join(base,"player.png"))
+    player_img = pygame.transform.scale(player_img,(40,40))
 
-bullet_img = pygame.image.load(os.path.join(base,"bullet.png"))
-bullet_img = pygame.transform.scale(bullet_img,(10,20))
+    bullet_img = pygame.image.load(os.path.join(base,"bullet.png"))
+    bullet_img = pygame.transform.scale(bullet_img,(10,20))
 
-enemy1 = pygame.image.load(os.path.join(base,"enemy1.png"))
-enemy1 = pygame.transform.scale(enemy1,(40,40))
+    enemy1 = pygame.image.load(os.path.join(base,"enemy1.png"))
+    enemy1 = pygame.transform.scale(enemy1,(40,40))
 
-enemy2 = pygame.image.load(os.path.join(base,"enemy2.png"))
-enemy2 = pygame.transform.scale(enemy2,(40,40))
+    enemy2 = pygame.image.load(os.path.join(base,"enemy2.png"))
+    enemy2 = pygame.transform.scale(enemy2,(40,40))
 
-player_x = width//2
+    while True:
+        player_x = width//2
 
-bullets = []
-enemies = []
+        bullets = []
+        enemies = []
 
-speed = 0.8
-timer = 0
-score = 0
-started = False
-
-while len(enemies) < 2:
-    img = enemy1 if random.randint(0,1)==0 else enemy2
-    enemies.append([random.randint(0,width-40),0,img])
-
-running = True
-while running:
-    screen.blit(bg,(0,0))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.KEYDOWN:
-            started = True
-            if event.key == pygame.K_SPACE:
-                bullets.append([player_x+15,height-40])
-
-    if started:
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            player_x -= 5
-        if keys[pygame.K_RIGHT]:
-            player_x += 5
-
-        timer += 1
-        if timer % 60 == 0:
-            speed += 0.03
+        speed = 0.8
+        timer = 0
+        score = 0
+        started = False
 
         while len(enemies) < 2:
             img = enemy1 if random.randint(0,1)==0 else enemy2
             enemies.append([random.randint(0,width-40),0,img])
 
-    player_rect = pygame.Rect(player_x,height-40,40,40)
-    screen.blit(player_img,(player_x,height-40))
+        running = True
+        while running:
+            screen.blit(bg,(0,0))
 
-    for bullet in bullets[:]:
-        if started:
-            bullet[1] -= 7
-        screen.blit(bullet_img,(bullet[0],bullet[1]))
-        if bullet[1] < 0:
-            bullets.remove(bullet)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-    for enemy in enemies[:]:
-        if started:
-            enemy[1] += speed
-        screen.blit(enemy[2],(enemy[0],enemy[1]))
+                if event.type == pygame.KEYDOWN:
+                    started = True
+                    if event.key == pygame.K_SPACE:
+                        bullets.append([player_x+15,height-40])
 
-        enemy_rect = pygame.Rect(enemy[0],enemy[1],40,40)
+            if started:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_LEFT]:
+                    player_x -= 5
+                if keys[pygame.K_RIGHT]:
+                    player_x += 5
 
-        if started and (enemy_rect.colliderect(player_rect) or enemy[1] > height):
-            running = False
+                timer += 1
+                if timer % 60 == 0:
+                    speed += 0.03
 
-        for bullet in bullets[:]:
-            bullet_rect = pygame.Rect(bullet[0],bullet[1],10,20)
-            if bullet_rect.colliderect(enemy_rect):
-                bullets.remove(bullet)
-                enemies.remove(enemy)
-                score += 1
-                break
+                while len(enemies) < 2:
+                    img = enemy1 if random.randint(0,1)==0 else enemy2
+                    enemies.append([random.randint(0,width-40),0,img])
 
-    text = font.render(f"Score: {score}", True, white)
-    screen.blit(text,(width-120,10))
+            player_rect = pygame.Rect(player_x,height-40,40,40)
+            screen.blit(player_img,(player_x,height-40))
 
-    if not started:
-        msg = font.render("Press any key to start", True, white)
-        screen.blit(msg,(180,180))
+            for bullet in bullets[:]:
+                if started:
+                    bullet[1] -= 7
+                screen.blit(bullet_img,(bullet[0],bullet[1]))
+                if bullet[1] < 0:
+                    bullets.remove(bullet)
 
-    pygame.display.update()
-    clock.tick(fps)
+            for enemy in enemies[:]:
+                if started:
+                    enemy[1] += speed
+                screen.blit(enemy[2],(enemy[0],enemy[1]))
 
-pygame.quit()
+                enemy_rect = pygame.Rect(enemy[0],enemy[1],40,40)
+
+                if started and (enemy_rect.colliderect(player_rect) or enemy[1] > height):
+                    running = False
+
+                for bullet in bullets[:]:
+                    bullet_rect = pygame.Rect(bullet[0],bullet[1],10,20)
+                    if bullet_rect.colliderect(enemy_rect):
+                        if bullet in bullets:
+                            bullets.remove(bullet)
+                        if enemy in enemies:
+                            enemies.remove(enemy)
+                        score += 1
+                        break
+
+            text = font.render(f"Score: {score}", True, white)
+            screen.blit(text,(width-120,10))
+
+            if not started:
+                msg = font.render("Press any key to start", True, white)
+                screen.blit(msg,(180,180))
+
+            pygame.display.update()
+            clock.tick(fps)
+
+        gameover.show_gameover_screen(screen, score)
